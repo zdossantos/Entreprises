@@ -1,180 +1,139 @@
 <script setup>
-import DangerButton from "@/Components/DangerButton.vue";
-import Modal from "@/Components/Modal.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import { nextTick, ref } from "vue";
+import { ref } from "vue";
+import { router, Head, Link } from "@inertiajs/vue3";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import pagination from "@/Components/Pagination.vue";
+import { Button } from "@/Components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Badge } from "@/Components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
+import { PlusCircle, Pencil, Trash2 } from "lucide-vue-next";
+import { formatDate, employeeLabel } from "@/lib/entrepriseFormatters";
 
-const confirmingEntrepriseDeletion = ref(false);
+const props = defineProps({
+    entreprises: Object,
+});
 
+const confirmingDeletion = ref(false);
+const currentEntrepriseId = ref(null);
 
-const confirmEntrepriseDeletion = () => {
-    confirmingEntrepriseDeletion.value = true;
+const confirmDeletion = (id) => {
+    currentEntrepriseId.value = id;
+    confirmingDeletion.value = true;
 };
 
+const closeDeletion = () => {
+    confirmingDeletion.value = false;
+    currentEntrepriseId.value = null;
+};
 
-const closeModal = () => {
-    confirmingEntrepriseDeletion.value = false;
+const destroy = () => {
+    router.delete(route("entreprises.destroy", currentEntrepriseId.value));
+    closeDeletion();
 };
 </script>
-<template>
 
+<template>
     <Head title="Entreprises" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Entreprises
-            </h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold leading-tight text-foreground">
+                    Mes entreprises
+                </h2>
+                <Link :href="route('entreprises.create')">
+                    <Button>
+                        <PlusCircle class="mr-2 h-4 w-4" />
+                        Ajouter une entreprise
+                    </Button>
+                </Link>
+            </div>
         </template>
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <div class="mb-4 flex">
-                            <Link class="px-6 py-2 mb-2 text-green-100 bg-green-500 rounded"
-                                :href="route('entreprises.create')">
-                            Ajouter une entreprise
-                            </Link>
-                        </div>
-                        <div class="flex flex-wrap flex-col sm:flex-row sm:items-start justify-center ">
-                            <div class=" md:w-1/2 p-3  flex justify-center" v-for="entreprise in entreprises.data"
-                                :key="entreprise.id">
-                                <div
-                                    class="h-auto w-full sm:w-96 p-6 bg-white border border-gray-200 rounded-lg shadow-md">
-                                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-black">
-                                        {{ entreprise . name }}
-                                    </h5>
-                                    <p class="mb-3 font-normal text-gray-700">
-                                    <p>N° de Siret : {{ entreprise . siret }}</p>
-                                    <p>N° de Siren : {{ entreprise . siren }}</p>
-                                    <p>Adresse : {{ entreprise . adresse }}</p>
-                                    <p>Ville : {{ entreprise . city }}</p>
-                                    <p>Code postal : {{ entreprise . postalCode }}</p>
-                                    <p v-if="entreprise.sliceNbEmployee == '00'">Effectif : 0 salarié ou l'information n'est pas disponible</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '01'">Effectif : 1 ou 2 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '02'">Effectif : 3 à 5 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '03'">Effectif : 6 à 9 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '11'">Effectif : 10 à 19 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '12'">Effectif : 20 à 49 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '21'">Effectif : 50 à 99 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '22'">Effectif : 100 à 199 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '31'">Effectif : 200 à 249 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '32'">Effectif : 250 à 499 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '41'">Effectif : 500 à 999 salariés</p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '42'">Effectif : 1 000 à 1 999 salariés
-                                    </p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '51'">Effectif : 2 000 à 4 999 salariés
-                                    </p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '52'">Effectif : 5 000 à 9 999 salariés
-                                    </p>
-                                    <p v-else-if="entreprise.sliceNbEmployee == '53'">Effectif : 10 000 salariés et plus
-                                    </p>
-                                    <p>Date de création : {{ $options . filters . test(entreprise . creationDate) }}</p>
+                <div v-if="entreprises.data.length === 0" class="text-center py-12">
+                    <p class="text-muted-foreground text-lg">Aucune entreprise enregistrée.</p>
+                    <Link :href="route('entreprises.create')" class="mt-4 inline-block">
+                        <Button variant="outline">
+                            <PlusCircle class="mr-2 h-4 w-4" />
+                            Créer votre première entreprise
+                        </Button>
+                    </Link>
+                </div>
 
-                                    </p>
-                                    <div class="flex justify-between"><a
-                                            :href="route(
-                                                'entreprises.edit',
-                                                entreprise.id
-                                            )"
-                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-                                            Modifier
-                                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-                                                width="24" height="24" class="w-4 h-4 ml-2 -mr-1"
-                                                fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M 19.171875 2 C 18.448125 2 17.724375 2.275625 17.171875 2.828125 L 16 4 L 20 8 L 21.171875 6.828125 C 22.275875 5.724125 22.275875 3.933125 21.171875 2.828125 C 20.619375 2.275625 19.895625 2 19.171875 2 z M 14.5 5.5 L 3 17 L 3 21 L 7 21 L 18.5 9.5 L 14.5 5.5 z">
-                                                </path>
-                                            </svg>
-                                        </a>
-                                        <a @click="confirmEntrepriseDeletion()"
-                                        @mouseover="currentEntrepriseId = entreprise.id"
-                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300">
-                                            Supprimer
-                                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-                                                width="24" height="24" class="w-4 h-4 ml-2 -mr-1"
-                                                fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 22 L 19 22 L 19 7 L 5 7 z">
-                                                </path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </div>
+                <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <Card v-for="entreprise in entreprises.data" :key="entreprise.id" class="hover:shadow-md transition-shadow">
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-lg">{{ entreprise.name }}</CardTitle>
+                            <div class="flex gap-2 flex-wrap">
+                                <Badge variant="secondary">SIRET : {{ entreprise.siret }}</Badge>
+                                <Badge variant="outline">SIREN : {{ entreprise.siren }}</Badge>
                             </div>
-                        </div>
-                        <pagination class="flex justify-center" :links="entreprises.links">
-                        </pagination>
-                    </div>
+                        </CardHeader>
+                        <CardContent>
+                            <dl class="space-y-1 text-sm text-muted-foreground">
+                                <div v-if="entreprise.adresse">
+                                    <dt class="inline font-medium text-foreground">Adresse : </dt>
+                                    <dd class="inline">{{ entreprise.adresse }}, {{ entreprise.postalCode }} {{ entreprise.city }}</dd>
+                                </div>
+                                <div v-if="entreprise.sliceNbEmployee">
+                                    <dt class="inline font-medium text-foreground">Effectif : </dt>
+                                    <dd class="inline">{{ employeeLabel(entreprise.sliceNbEmployee) }} salariés</dd>
+                                </div>
+                                <div v-if="entreprise.creationDate">
+                                    <dt class="inline font-medium text-foreground">Créée le : </dt>
+                                    <dd class="inline">{{ formatDate(entreprise.creationDate) }}</dd>
+                                </div>
+                            </dl>
+                            <div class="mt-4 flex gap-2">
+                                <Link :href="route('entreprises.edit', entreprise.id)">
+                                    <Button variant="outline" size="sm">
+                                        <Pencil class="mr-1 h-3 w-3" />
+                                        Modifier
+                                    </Button>
+                                </Link>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    @click="confirmDeletion(entreprise.id)"
+                                >
+                                    <Trash2 class="mr-1 h-3 w-3" />
+                                    Supprimer
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div class="mt-6">
+                    <pagination :links="entreprises.links" class="flex justify-center" />
                 </div>
             </div>
         </div>
-        <Modal :show="confirmingEntrepriseDeletion" @close="closeModal">
-            <div class="p-6">
-                <h2 class="text-lg font-medium text-gray-900">
-                    Êtes-vous sûr de vouloir supprimer cette entreprise ?
-                </h2>
 
-                <p class="mt-1 text-sm text-gray-600">
-                    Une fois l'entreprise supprimé, toutes ses données seront définitivement effacées. <br />
-                </p>
-
-                <div class="mt-6 flex justify-end">
-                    <SecondaryButton @click="closeModal">
-                        Annuler
-                    </SecondaryButton>
-
-                <div @click="destroy()">
-                    <DangerButton
-                        class="ml-3"
-                        @click="closeModal"
-                    >
-                        Supprimer l'entreprise
-                    </DangerButton>
-                </div>
-                </div>
-            </div>
-        </Modal>
+        <!-- Delete confirmation dialog -->
+        <Dialog :open="confirmingDeletion" @update:open="closeDeletion">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Supprimer cette entreprise ?</DialogTitle>
+                    <DialogDescription>
+                        Cette action est irréversible. Toutes les données associées à cette entreprise seront définitivement supprimées.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button variant="outline" @click="closeDeletion">Annuler</Button>
+                    <Button variant="destructive" @click="destroy">Supprimer</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AuthenticatedLayout>
 </template>
-
-<script>
-    import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-    import BreezeNavLink from "@/Components/NavLink.vue";
-    import pagination from "@/Components/Pagination.vue";
-    import {
-        Head,
-        Link
-    } from "@inertiajs/inertia-vue3";
-    import moment from 'moment';
-    import 'moment/dist/locale/fr';
-
-    export default {
-        components: {
-            AuthenticatedLayout,
-            Head,
-            BreezeNavLink,
-            Link,
-            pagination,
-        },
-        props: {
-            entreprises: Object,
-        },
-        data(){
-            return {
-                currentEntrepriseId: null,
-            }
-        },
-        filters: {
-            test: function(date) {
-                return moment(String(date)).format('LL');
-            }
-        },
-        methods: {
-            destroy() {
-                this.$inertia.delete(route("entreprises.destroy", this.currentEntrepriseId ));
-            }
-        },
-    };
-</script>

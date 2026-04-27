@@ -26,8 +26,8 @@ return new class extends Migration
             $table->string('sliceNbEmployee');
             $table->timestamps();
             $table->foreign('user_id')->on('users')->references('id')
-   ->onDelete('CASCADE')
-   ->onUpdate('CASCADE');
+                ->onDelete('CASCADE')
+                ->onUpdate('CASCADE');
         });
     }
 
