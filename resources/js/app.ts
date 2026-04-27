@@ -8,8 +8,8 @@ import { ZiggyVue } from "ziggy-js";
 import { createPinia } from "pinia";
 
 createInertiaApp({
-    title: (title) => `${title}`,
-    resolve: (name) =>
+    title: (title: string) => `${title}`,
+    resolve: (name: string) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,
             import.meta.glob("./Pages/**/*.vue")

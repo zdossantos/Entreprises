@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
 import { Head, useForm } from "@inertiajs/vue3";
@@ -9,11 +9,46 @@ import { Label } from "@/Components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Search } from "lucide-vue-next";
 
-const props = defineProps({
-    entreprise: Object,
-});
+interface EntrepriseProps {
+    id: number;
+    name: string;
+    siret: string;
+    siren: string;
+    adresse: string | null;
+    postalCode: string | null;
+    city: string | null;
+    sliceNbEmployee: string;
+    creationDate: string | null;
+}
 
-const error = ref(false);
+interface EmployeeOption {
+    value: string;
+    label: string;
+}
+
+interface InseeAddress {
+    numeroVoieEtablissement: string;
+    typeVoieEtablissement: string;
+    libelleVoieEtablissement: string;
+    codePostalEtablissement: string;
+    libelleCommuneEtablissement: string;
+}
+
+interface InseeEtablissement {
+    siren: string;
+    dateCreationEtablissement: string;
+    trancheEffectifsEtablissement: string | null;
+    adresseEtablissement: InseeAddress;
+    uniteLegale: {
+        denominationUniteLegale: string;
+    };
+}
+
+const props = defineProps<{
+    entreprise: EntrepriseProps;
+}>();
+
+const error = ref<boolean>(false);
 
 const form = useForm({
     name: props.entreprise.name,
@@ -26,7 +61,7 @@ const form = useForm({
     sliceNbEmployee: props.entreprise.sliceNbEmployee,
 });
 
-const submit = () => {
+const submit = (): void => {
     form.put(route("entreprises.update", props.entreprise.id), {
         onError: () => {
             error.value = true;
@@ -35,10 +70,12 @@ const submit = () => {
     });
 };
 
-const getDatas = async () => {
+const getDatas = async (): Promise<void> => {
     const siret = form.siret ? String(form.siret) : "";
     if (siret.length === 14) {
-        const { data } = await axios.get(route("entreprises.lookup", siret));
+        const { data } = await axios.get<{ etablissement: InseeEtablissement }>(
+            route("entreprises.lookup", siret)
+        );
         const info = data.etablissement;
         const addr = info.adresseEtablissement;
         form.name = info.uniteLegale.denominationUniteLegale;
@@ -51,7 +88,7 @@ const getDatas = async () => {
     }
 };
 
-const employeeOptions = [
+const employeeOptions: EmployeeOption[] = [
     { value: "00", label: "0 salarié ou l'information n'est pas disponible" },
     { value: "01", label: "1 ou 2 salariés" },
     { value: "02", label: "3 à 5 salariés" },

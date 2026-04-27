@@ -56,15 +56,16 @@
         </div>
     </div>
 </template>
-<script>
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import { Link } from "@inertiajs/vue3";
-export default defineComponent({
-    components: {
-        Link,
-    },
-    props: {
-        links: Array,
-    },
-});
+
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+defineProps<{
+    links: PaginationLink[];
+}>();
 </script>

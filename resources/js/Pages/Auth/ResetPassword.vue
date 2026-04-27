@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
@@ -6,10 +6,10 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { Head, useForm } from "@inertiajs/vue3";
 
-const props = defineProps({
-    email: String,
-    token: String,
-});
+const props = defineProps<{
+    email: string;
+    token: string;
+}>();
 
 const form = useForm({
     token: props.token,
@@ -18,7 +18,7 @@ const form = useForm({
     password_confirmation: "",
 });
 
-const submit = () => {
+const submit = (): void => {
     form.post(route("password.store"), {
         onFinish: () => form.reset("password", "password_confirmation"),
     });

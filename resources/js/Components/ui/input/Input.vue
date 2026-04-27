@@ -1,13 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { cn } from "@/lib/utils";
 
-const props = defineProps({
-    class: { type: String, default: "" },
-    type: { type: String, default: "text" },
-    modelValue: { type: [String, Number], default: "" },
-});
+const props = withDefaults(
+    defineProps<{
+        class?: string;
+        type?: string;
+        modelValue?: string | number;
+    }>(),
+    {
+        class: "",
+        type: "text",
+        modelValue: "",
+    }
+);
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits<{
+    (e: "update:modelValue", value: string): void;
+}>();
 </script>
 
 <template>

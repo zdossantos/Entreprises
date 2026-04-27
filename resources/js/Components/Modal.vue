@@ -1,22 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 
-const props = defineProps({
-    show: {
-        type: Boolean,
-        default: false,
-    },
-    maxWidth: {
-        type: String,
-        default: '2xl',
-    },
-    closeable: {
-        type: Boolean,
-        default: true,
-    },
-});
+const props = withDefaults(
+    defineProps<{
+        show?: boolean;
+        maxWidth?: string;
+        closeable?: boolean;
+    }>(),
+    {
+        show: false,
+        maxWidth: '2xl',
+        closeable: true,
+    }
+);
 
-const emit = defineEmits(['close']);
+const emit = defineEmits<{
+    (e: 'close'): void;
+}>();
 
 watch(
     () => props.show,
@@ -24,18 +24,18 @@ watch(
         if (props.show) {
             document.body.style.overflow = 'hidden';
         } else {
-            document.body.style.overflow = null;
+            document.body.style.overflow = '';
         }
     }
 );
 
-const close = () => {
+const close = (): void => {
     if (props.closeable) {
         emit('close');
     }
 };
 
-const closeOnEscape = (e) => {
+const closeOnEscape = (e: KeyboardEvent): void => {
     if (e.key === 'Escape' && props.show) {
         close();
     }
@@ -45,17 +45,17 @@ onMounted(() => document.addEventListener('keydown', closeOnEscape));
 
 onUnmounted(() => {
     document.removeEventListener('keydown', closeOnEscape);
-    document.body.style.overflow = null;
+    document.body.style.overflow = '';
 });
 
 const maxWidthClass = computed(() => {
-    return {
+    return ({
         sm: 'sm:max-w-sm',
         md: 'sm:max-w-md',
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
-    }[props.maxWidth];
+    } as Record<string, string>)[props.maxWidth];
 });
 </script>
 

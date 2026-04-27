@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { cn } from "@/lib/utils";
-const props = defineProps({ class: { type: String, default: "" } });
+const props = withDefaults(defineProps<{ class?: string }>(), { class: "" });
 </script>
 <template>
     <div :class="cn('flex flex-col space-y-1.5 text-center sm:text-left', props.class)">

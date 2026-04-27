@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
 import { Head, useForm } from "@inertiajs/vue3";
@@ -9,20 +9,43 @@ import { Label } from "@/Components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Search } from "lucide-vue-next";
 
-const error = ref(false);
+interface EmployeeOption {
+    value: string;
+    label: string;
+}
+
+interface InseeAddress {
+    numeroVoieEtablissement: string;
+    typeVoieEtablissement: string;
+    libelleVoieEtablissement: string;
+    codePostalEtablissement: string;
+    libelleCommuneEtablissement: string;
+}
+
+interface InseeEtablissement {
+    siren: string;
+    dateCreationEtablissement: string;
+    trancheEffectifsEtablissement: string | null;
+    adresseEtablissement: InseeAddress;
+    uniteLegale: {
+        denominationUniteLegale: string;
+    };
+}
+
+const error = ref<boolean>(false);
 
 const form = useForm({
-    name: null,
-    siret: null,
-    adresse: null,
-    postalCode: null,
-    city: null,
-    siren: null,
-    creationDate: null,
+    name: null as string | null,
+    siret: null as string | null,
+    adresse: null as string | null,
+    postalCode: null as string | null,
+    city: null as string | null,
+    siren: null as string | null,
+    creationDate: null as string | null,
     sliceNbEmployee: "00",
 });
 
-const submit = () => {
+const submit = (): void => {
     form.post(route("entreprises.store"), {
         onError: () => {
             error.value = true;
@@ -31,10 +54,12 @@ const submit = () => {
     });
 };
 
-const getDatas = async () => {
+const getDatas = async (): Promise<void> => {
     const siret = form.siret ? String(form.siret) : "";
     if (siret.length === 14) {
-        const { data } = await axios.get(route("entreprises.lookup", siret));
+        const { data } = await axios.get<{ etablissement: InseeEtablissement }>(
+            route("entreprises.lookup", siret)
+        );
         const info = data.etablissement;
         const addr = info.adresseEtablissement;
         form.name = info.uniteLegale.denominationUniteLegale;
@@ -47,7 +72,7 @@ const getDatas = async () => {
     }
 };
 
-const employeeOptions = [
+const employeeOptions: EmployeeOption[] = [
     { value: "00", label: "0 salarié ou l'information n'est pas disponible" },
     { value: "01", label: "1 ou 2 salariés" },
     { value: "02", label: "3 à 5 salariés" },

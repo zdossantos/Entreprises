@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { cn } from "@/lib/utils";
-const props = defineProps({
-    class: { type: String, default: "" },
-    for: { type: String, default: "" },
-});
+const props = withDefaults(
+    defineProps<{ class?: string; for?: string }>(),
+    { class: "", for: "" }
+);
 </script>
 
 <template>

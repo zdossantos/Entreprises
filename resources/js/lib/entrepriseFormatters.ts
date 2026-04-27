@@ -7,11 +7,8 @@
 /**
  * Format an ISO date string (YYYY-MM-DD) into a French locale date.
  * Returns an empty string for falsy input.
- *
- * @param {string|null|undefined} date
- * @returns {string}
  */
-export const formatDate = (date) => {
+export const formatDate = (date: string | null | undefined): string => {
     if (!date) return "";
     return new Intl.DateTimeFormat("fr-FR", {
         day: "numeric",
@@ -23,7 +20,7 @@ export const formatDate = (date) => {
 /**
  * Map of INSEE employee-range codes to human-readable French labels.
  */
-export const EMPLOYEE_LABELS = {
+export const EMPLOYEE_LABELS: Record<string, string> = {
     "00": "0 ou non disponible",
     "01": "1-2",
     "02": "3-5",
@@ -44,10 +41,7 @@ export const EMPLOYEE_LABELS = {
 /**
  * Return the French label for a given INSEE employee-range code.
  * Falls back to the raw code, or "" for null/undefined.
- *
- * @param {string|null|undefined} code
- * @returns {string}
  */
-export const employeeLabel = (code) => {
+export const employeeLabel = (code: string | null | undefined): string => {
     return code && EMPLOYEE_LABELS[code] ? EMPLOYEE_LABELS[code] : code ?? "";
 };
