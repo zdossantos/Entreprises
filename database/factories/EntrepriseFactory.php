@@ -2,30 +2,36 @@
 
 namespace Database\Factories;
 
+use App\Models\Entreprise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Entreprises>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Entreprise>
  */
 class EntrepriseFactory extends Factory
 {
+    protected $model = Entreprise::class;
+
     /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
+        $siren = str_pad((string) $this->faker->numberBetween(100000000, 999999999), 9, '0', STR_PAD_LEFT);
+        $siret = $siren . str_pad((string) $this->faker->numberBetween(10000, 99999), 5, '0', STR_PAD_LEFT);
+
         return [
             'name' => $this->faker->company(),
-            'siret' => $this->faker->numberBetween($min = 100000000, $max = 999999999),
-            'user_id' => \App\Models\User::factory()->create()->id,
+            'siret' => $siret,
+            'siren' => $siren,
+            'user_id' => \App\Models\User::factory(),
             'adresse' => $this->faker->streetAddress(),
-            'postalCode' => $this->faker->postcode(),
+            'postalCode' => str_pad((string) $this->faker->numberBetween(1000, 99999), 5, '0', STR_PAD_LEFT),
             'city' => $this->faker->city(),
-            'siren' => $this->faker->numberBetween($min = 100000000000, $max = 999999999999),
-            'creationDate' => $this->faker->date($format = 'Y-m-d', $max = 'now'),
-            'sliceNbEmployee' => $this->faker->randomElement($array = array('00','01','02','03','10','11','12','21','22','31','32','41','42','51','52','53'))
+            'creationDate' => $this->faker->date('Y-m-d'),
+            'sliceNbEmployee' => $this->faker->randomElement(['00', '01', '02', '03', '11', '12', '21', '22', '31', '32', '41', '42', '51', '52', '53']),
         ];
     }
 }
