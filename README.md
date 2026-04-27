@@ -144,7 +144,7 @@ npm run dev                # frontend → http://localhost:5173
 | `QUEUE_CONNECTION`     | Queue driver (`sync`, `redis`)                   | `sync`               |
 | `REDIS_HOST`           | Redis host                                       | `127.0.0.1`          |
 | `REDIS_PORT`           | Redis port                                       | `6379`               |
-| `VITE_SIRET_API_TOKEN` | Bearer token for INSEE SIRENE API                | –                    |
+| `INSEE_API_TOKEN`      | Bearer token for INSEE SIRENE API (server-side only) | –               |
 
 > **Note:** The INSEE SIRENE API token must be obtained from [api.insee.fr](https://api.insee.fr/catalogue/). Without it, the auto-fill feature is disabled (you can still enter data manually).
 
@@ -282,7 +282,7 @@ cd Entreprises
 cp .env.example .env
 # Set APP_ENV=production, APP_DEBUG=false, APP_URL=https://yourdomain.com
 # Set DB_* and REDIS_* values
-# Set VITE_SIRET_API_TOKEN
+# Set INSEE_API_TOKEN (server-side, never use VITE_ prefix)
 
 # 3. Build and start production containers
 docker compose -f docker-compose.prod.yml up -d --build

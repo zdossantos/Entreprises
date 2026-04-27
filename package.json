@@ -31,6 +31,7 @@
         "radix-vue": "^1.9.17",
         "tailwind-merge": "^3.5.0",
         "tailwindcss-animate": "^1.0.7",
-        "vue-cookies": "^1.8.2"
+        "vue-cookies": "^1.8.2",
+        "ziggy-js": "^2.6.2"
     }
 }

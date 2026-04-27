@@ -1,36 +1,5 @@
 import { describe, it, expect } from "vitest";
-
-// Utility functions extracted from Entreprise/Index.vue for unit testing
-
-const formatDate = (date) => {
-    if (!date) return "";
-    return new Intl.DateTimeFormat("fr-FR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    }).format(new Date(date));
-};
-
-const employeeLabel = (code) => {
-    const map = {
-        "00": "0 ou non disponible",
-        "01": "1-2",
-        "02": "3-5",
-        "03": "6-9",
-        "11": "10-19",
-        "12": "20-49",
-        "21": "50-99",
-        "22": "100-199",
-        "31": "200-249",
-        "32": "250-499",
-        "41": "500-999",
-        "42": "1 000-1 999",
-        "51": "2 000-4 999",
-        "52": "5 000-9 999",
-        "53": "10 000+",
-    };
-    return code && map[code] ? map[code] : code ?? "";
-};
+import { formatDate, employeeLabel } from "@/lib/entrepriseFormatters";
 
 describe("formatDate", () => {
     it("returns empty string for falsy values", () => {

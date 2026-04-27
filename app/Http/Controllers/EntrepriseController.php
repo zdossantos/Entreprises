@@ -4,12 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Entreprise;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
 class EntrepriseController extends Controller
 {
+    /**
+     * Proxy the INSEE SIRENE API lookup for a given SIRET number.
+     * The API token lives in config/services.php and is never exposed to the browser.
+     */
+    public function lookupSiret(string $siret): JsonResponse
+    {
+        $token = config('services.insee.token');
+
+        $response = Http::withToken($token)
+            ->get("https://api.insee.fr/entreprises/sirene/V3/siret/{$siret}");
+
+        if ($response->failed()) {
+            return response()->json(['error' => 'Entreprise non trouvée'], $response->status());
+        }
+
+        return response()->json($response->json());
+    }
+
     /**
      * Display a listing of the resource.
      *

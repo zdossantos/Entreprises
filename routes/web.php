@@ -31,7 +31,13 @@ Route::get('/dashboard', function () {
 
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->resource('entreprises', EntrepriseController::class);
+Route::middleware(['auth', 'verified'])->group(function () {
+    // SIRET proxy – keeps the INSEE API token server-side
+    Route::get('/entreprises/siret/{siret}', [EntrepriseController::class, 'lookupSiret'])
+        ->name('entreprises.lookup');
+
+    Route::resource('entreprises', EntrepriseController::class);
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

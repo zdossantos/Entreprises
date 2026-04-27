@@ -9,8 +9,8 @@ php artisan view:cache
 # Run migrations (with safety flag for production)
 php artisan migrate --force
 
-# Start Nginx in background
-nginx -g "daemon off;" &
+# Start PHP-FPM in daemon mode
+php-fpm -D
 
-# Start PHP-FPM in foreground
-exec php-fpm
+# Start Nginx in foreground as PID 1 so Docker can manage signals correctly
+exec nginx -g "daemon off;"

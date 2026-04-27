@@ -1,10 +1,19 @@
 <script setup>
-import { cn } from "@/lib/utils";
+import { onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
     open: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:open"]);
+
+const handleKeydown = (e) => {
+    if (e.key === "Escape" && props.open) {
+        emit("update:open", false);
+    }
+};
+
+onMounted(() => document.addEventListener("keydown", handleKeydown));
+onUnmounted(() => document.removeEventListener("keydown", handleKeydown));
 </script>
 
 <template>
@@ -20,10 +29,17 @@ const emit = defineEmits(["update:open"]);
             <div
                 v-if="open"
                 class="fixed inset-0 z-50 flex items-center justify-center"
-                @click.self="emit('update:open', false)"
             >
-                <div class="fixed inset-0 bg-black/50" @click="emit('update:open', false)" />
-                <div class="relative z-50 grid w-full max-w-lg gap-4 bg-background p-6 shadow-lg sm:rounded-lg mx-4">
+                <div
+                    class="fixed inset-0 bg-black/50"
+                    aria-hidden="true"
+                    @click="emit('update:open', false)"
+                />
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    class="relative z-50 grid w-full max-w-lg gap-4 bg-background p-6 shadow-lg sm:rounded-lg mx-4"
+                >
                     <slot />
                 </div>
             </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from "vue";
+import axios from "axios";
 import { Head, useForm } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Button } from "@/Components/ui/button";
@@ -37,11 +38,7 @@ const submit = () => {
 const getDatas = async () => {
     const siret = form.siret ? String(form.siret) : "";
     if (siret.length === 14) {
-        const headers = { Authorization: `Bearer ${import.meta.env.VITE_SIRET_API_TOKEN}` };
-        const { data } = await axios.get(
-            `https://api.insee.fr/entreprises/sirene/V3/siret/${siret}`,
-            { headers }
-        );
+        const { data } = await axios.get(route("entreprises.lookup", siret));
         const info = data.etablissement;
         const addr = info.adresseEtablissement;
         form.name = info.uniteLegale.denominationUniteLegale;
