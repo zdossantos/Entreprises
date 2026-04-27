@@ -1,5 +1,8 @@
 #!/bin/bash
-set -e
+set -eo pipefail
+
+# Render nginx config from template (supports PORT env var)
+envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
 
 # Run Laravel optimizations on boot
 php artisan config:cache

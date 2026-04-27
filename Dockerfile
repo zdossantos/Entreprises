@@ -35,6 +35,7 @@ RUN apk add --no-cache \
     nginx \
     bash \
     curl \
+    gettext \
     libpng-dev \
     libzip-dev \
     oniguruma-dev \
@@ -45,8 +46,8 @@ RUN apk add --no-cache \
 # OPcache configuration for production
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
-# Nginx configuration
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+# Nginx configuration template
+COPY docker/nginx/default.conf.template /etc/nginx/http.d/default.conf.template
 
 WORKDIR /var/www/html
 
@@ -68,5 +69,10 @@ COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
+
+ENV PORT=80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD /bin/sh -c 'curl -f http://localhost:${PORT}/up || exit 1'
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
