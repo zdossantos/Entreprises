@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link } from "@inertiajs/inertia-vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 </script>
 
@@ -20,9 +20,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
                     <div class="p-6 text-gray-900">Vous êtes connecté!</div>
                     <div class="p-6 text-gray-900">
                         <Link :href="route('entreprises.index')">
-                                <PrimaryButton class="ml-4">Vos entreprises
-                        </PrimaryButton>
-                            </link>
+                            <PrimaryButton class="ml-4">Vos entreprises</PrimaryButton>
+                        </Link>
                     </div>
                 </div>
             </div>
