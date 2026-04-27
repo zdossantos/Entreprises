@@ -2,7 +2,11 @@
 import { ref } from "vue";
 import { Head, useForm } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Search } from "lucide-vue-next";
 
 const error = ref(false);
 
@@ -21,9 +25,7 @@ const submit = () => {
     form.post(route("entreprises.store"), {
         onError: () => {
             error.value = true;
-            setTimeout(() => {
-                error.value = false;
-            }, 5000);
+            setTimeout(() => { error.value = false; }, 5000);
         },
     });
 };
@@ -47,6 +49,24 @@ const getDatas = async () => {
         form.sliceNbEmployee = info.trancheEffectifsEtablissement ?? "00";
     }
 };
+
+const employeeOptions = [
+    { value: "00", label: "0 salarié ou l'information n'est pas disponible" },
+    { value: "01", label: "1 ou 2 salariés" },
+    { value: "02", label: "3 à 5 salariés" },
+    { value: "03", label: "6 à 9 salariés" },
+    { value: "11", label: "10 à 19 salariés" },
+    { value: "12", label: "20 à 49 salariés" },
+    { value: "21", label: "50 à 99 salariés" },
+    { value: "22", label: "100 à 199 salariés" },
+    { value: "31", label: "200 à 249 salariés" },
+    { value: "32", label: "250 à 499 salariés" },
+    { value: "41", label: "500 à 999 salariés" },
+    { value: "42", label: "1 000 à 1 999 salariés" },
+    { value: "51", label: "2 000 à 4 999 salariés" },
+    { value: "52", label: "5 000 à 9 999 salariés" },
+    { value: "53", label: "10 000 salariés et plus" },
+];
 </script>
 
 <template>
@@ -54,87 +74,122 @@ const getDatas = async () => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Ajout d'entreprise
+            <h2 class="text-xl font-semibold leading-tight text-foreground">
+                Ajouter une entreprise
             </h2>
         </template>
+
         <div class="py-12">
-            <div class="mt-10 sm:mt-0 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="md:grid md:grid-cols-2 md:gap-6">
-                    <div v-if="error">
-                        <span class="bg-red-100 text-red-800 text-xl font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-red-200 dark:text-red-900">
-                            Merci de vérifier tous les champs
-                        </span>
-                    </div>
-                    <div class="mt-5 md:col-span-2 md:mt-0">
-                        <form @submit.prevent="submit">
-                            <div class="overflow-hidden shadow sm:rounded-md">
-                                <div class="bg-white px-4 py-5 sm:p-6">
-                                    <div class="grid grid-cols-6 gap-6">
-                                        <div class="col-span-6 sm:col-span-3">
-                                            <label for="siret" class="block text-sm font-medium text-gray-700">Siret</label>
-                                            <input type="text" name="siret" id="siret" v-model="form.siret" maxlength="14" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-3 flex items-end">
-                                            <PrimaryButton type="button" @click="getDatas" class="h-10">
-                                                Récupérer les informations
-                                            </PrimaryButton>
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-3">
-                                            <label for="siren" class="block text-sm font-medium text-gray-700">Siren</label>
-                                            <input type="text" name="siren" id="siren" v-model="form.siren" maxlength="9" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-3">
-                                            <label for="name" class="block text-sm font-medium text-gray-700">Nom</label>
-                                            <input type="text" name="name" id="name" v-model="form.name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-4">
-                                            <label for="adresse" class="block text-sm font-medium text-gray-700">Adresse</label>
-                                            <input type="text" name="adresse" id="adresse" v-model="form.adresse" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-2">
-                                            <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
-                                            <input type="text" name="city" id="city" v-model="form.city" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-3 lg:col-span-2">
-                                            <label for="postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                                            <input type="text" name="postalCode" id="postalCode" v-model="form.postalCode" maxlength="5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-3 lg:col-span-2">
-                                            <label for="creationDate" class="block text-sm font-medium text-gray-700">Date de création</label>
-                                            <input type="date" name="creationDate" id="creationDate" v-model="form.creationDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div class="col-span-6 sm:col-span-3">
-                                            <label for="sliceNbEmployee" class="block text-sm font-medium text-gray-700">Nombre d'employés</label>
-                                            <select id="sliceNbEmployee" name="sliceNbEmployee" v-model="form.sliceNbEmployee" class="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                                                <option value="00">0 salarié ou l'information n'est pas disponible</option>
-                                                <option value="01">1 ou 2 salariés</option>
-                                                <option value="02">3 à 5 salariés</option>
-                                                <option value="03">6 à 9 salariés</option>
-                                                <option value="11">10 à 19 salariés</option>
-                                                <option value="12">20 à 49 salariés</option>
-                                                <option value="21">50 à 99 salariés</option>
-                                                <option value="22">100 à 199 salariés</option>
-                                                <option value="31">200 à 249 salariés</option>
-                                                <option value="32">250 à 499 salariés</option>
-                                                <option value="41">500 à 999 salariés</option>
-                                                <option value="42">1 000 à 1 999 salariés</option>
-                                                <option value="51">2 000 à 4 999 salariés</option>
-                                                <option value="52">5 000 à 9 999 salariés</option>
-                                                <option value="53">10 000 salariés et plus</option>
-                                            </select>
-                                        </div>
-                                    </div>
+            <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Informations de l'entreprise</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div v-if="error" class="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                            Merci de vérifier tous les champs obligatoires.
+                        </div>
+
+                        <form @submit.prevent="submit" class="space-y-6">
+                            <!-- SIRET lookup -->
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label for="siret">Numéro SIRET</Label>
+                                    <Input
+                                        id="siret"
+                                        type="text"
+                                        v-model="form.siret"
+                                        maxlength="14"
+                                        placeholder="14 chiffres"
+                                        :class="{ 'border-destructive': form.errors.siret }"
+                                    />
+                                    <p v-if="form.errors.siret" class="text-xs text-destructive">{{ form.errors.siret }}</p>
                                 </div>
-                                <div class="bg-gray-50 px-4 py-3 text-right sm:px-6">
-                                    <button type="submit" class="px-6 py-2 text-white bg-gray-900 rounded">
-                                        Enregistrer
-                                    </button>
+                                <div class="flex items-end">
+                                    <Button type="button" variant="outline" @click="getDatas">
+                                        <Search class="mr-2 h-4 w-4" />
+                                        Récupérer les informations
+                                    </Button>
                                 </div>
                             </div>
+
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label for="siren">Numéro SIREN</Label>
+                                    <Input
+                                        id="siren"
+                                        type="text"
+                                        v-model="form.siren"
+                                        maxlength="9"
+                                        placeholder="9 chiffres"
+                                        :class="{ 'border-destructive': form.errors.siren }"
+                                    />
+                                    <p v-if="form.errors.siren" class="text-xs text-destructive">{{ form.errors.siren }}</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="name">Nom de l'entreprise</Label>
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        v-model="form.name"
+                                        :class="{ 'border-destructive': form.errors.name }"
+                                    />
+                                    <p v-if="form.errors.name" class="text-xs text-destructive">{{ form.errors.name }}</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="adresse">Adresse</Label>
+                                <Input id="adresse" type="text" v-model="form.adresse" />
+                            </div>
+
+                            <div class="grid gap-4 sm:grid-cols-3">
+                                <div class="space-y-2 sm:col-span-2">
+                                    <Label for="city">Ville</Label>
+                                    <Input id="city" type="text" v-model="form.city" />
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="postalCode">Code postal</Label>
+                                    <Input id="postalCode" type="text" v-model="form.postalCode" maxlength="5" />
+                                </div>
+                            </div>
+
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label for="creationDate">Date de création</Label>
+                                    <Input
+                                        id="creationDate"
+                                        type="date"
+                                        v-model="form.creationDate"
+                                        :class="{ 'border-destructive': form.errors.creationDate }"
+                                    />
+                                    <p v-if="form.errors.creationDate" class="text-xs text-destructive">{{ form.errors.creationDate }}</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="sliceNbEmployee">Effectif</Label>
+                                    <select
+                                        id="sliceNbEmployee"
+                                        v-model="form.sliceNbEmployee"
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    >
+                                        <option v-for="opt in employeeOptions" :key="opt.value" :value="opt.value">
+                                            {{ opt.label }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-3">
+                                <Button type="button" variant="outline" as="a" :href="route('entreprises.index')">
+                                    Annuler
+                                </Button>
+                                <Button type="submit" :disabled="form.processing">
+                                    Enregistrer
+                                </Button>
+                            </div>
                         </form>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     </AuthenticatedLayout>
