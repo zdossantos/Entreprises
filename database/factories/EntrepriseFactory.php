@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Entreprise;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Entreprise>
+ * @extends Factory<Entreprise>
  */
 class EntrepriseFactory extends Factory
 {
@@ -20,13 +21,13 @@ class EntrepriseFactory extends Factory
     public function definition(): array
     {
         $siren = str_pad((string) $this->faker->numberBetween(100000000, 999999999), 9, '0', STR_PAD_LEFT);
-        $siret = $siren . str_pad((string) $this->faker->numberBetween(10000, 99999), 5, '0', STR_PAD_LEFT);
+        $siret = $siren.str_pad((string) $this->faker->numberBetween(10000, 99999), 5, '0', STR_PAD_LEFT);
 
         return [
             'name' => $this->faker->company(),
             'siret' => $siret,
             'siren' => $siren,
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'adresse' => $this->faker->streetAddress(),
             'postalCode' => str_pad((string) $this->faker->numberBetween(1000, 99999), 5, '0', STR_PAD_LEFT),
             'city' => $this->faker->city(),

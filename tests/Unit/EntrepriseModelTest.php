@@ -12,7 +12,7 @@ test('entreprise belongs to a user', function () {
 });
 
 test('entreprise has correct fillable attributes', function () {
-    $fillable = (new Entreprise())->getFillable();
+    $fillable = (new Entreprise)->getFillable();
 
     expect($fillable)->toContain('name');
     expect($fillable)->toContain('siret');
