@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import { router, Head, Link } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
@@ -17,24 +17,47 @@ import {
 import { PlusCircle, Pencil, Trash2 } from "lucide-vue-next";
 import { formatDate, employeeLabel } from "@/lib/entrepriseFormatters";
 
-const props = defineProps({
-    entreprises: Object,
-});
+interface Entreprise {
+    id: number;
+    name: string;
+    siret: string;
+    siren: string;
+    adresse: string | null;
+    postalCode: string | null;
+    city: string | null;
+    sliceNbEmployee: string | null;
+    creationDate: string | null;
+}
 
-const confirmingDeletion = ref(false);
-const currentEntrepriseId = ref(null);
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
 
-const confirmDeletion = (id) => {
+interface PaginatedEntreprises {
+    data: Entreprise[];
+    links: PaginationLink[];
+}
+
+const props = defineProps<{
+    entreprises: PaginatedEntreprises;
+}>();
+
+const confirmingDeletion = ref<boolean>(false);
+const currentEntrepriseId = ref<number | null>(null);
+
+const confirmDeletion = (id: number): void => {
     currentEntrepriseId.value = id;
     confirmingDeletion.value = true;
 };
 
-const closeDeletion = () => {
+const closeDeletion = (): void => {
     confirmingDeletion.value = false;
     currentEntrepriseId.value = null;
 };
 
-const destroy = () => {
+const destroy = (): void => {
     router.delete(route("entreprises.destroy", currentEntrepriseId.value));
     closeDeletion();
 };

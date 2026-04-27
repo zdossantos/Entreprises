@@ -1,9 +1,14 @@
 // Global test setup for Vitest + Vue Test Utils
 import { config } from "@vue/test-utils";
 
+type RouteValue = string | ((id: unknown) => string);
+
 // Mock the window.route function (provided by Ziggy)
-global.route = (name, params) => {
-    const routes = {
+(global as unknown as Record<string, unknown>).route = (
+    name: string,
+    params?: unknown
+): string => {
+    const routes: Record<string, RouteValue> = {
         "entreprises.index": "/entreprises",
         "entreprises.create": "/entreprises/create",
         "entreprises.store": "/entreprises",

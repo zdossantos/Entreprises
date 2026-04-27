@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { cn } from "@/lib/utils";
-import { cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 
 const badgeVariants = cva(
     "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -19,10 +19,18 @@ const badgeVariants = cva(
     }
 );
 
-const props = defineProps({
-    variant: { type: String, default: "default" },
-    class: { type: String, default: "" },
-});
+type BadgeVariants = VariantProps<typeof badgeVariants>;
+
+const props = withDefaults(
+    defineProps<{
+        variant?: BadgeVariants["variant"];
+        class?: string;
+    }>(),
+    {
+        variant: "default",
+        class: "",
+    }
+);
 </script>
 
 <template>

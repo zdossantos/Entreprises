@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 
-const props = defineProps({
-    open: { type: Boolean, default: false },
-});
-const emit = defineEmits(["update:open"]);
+const props = withDefaults(defineProps<{ open?: boolean }>(), { open: false });
+const emit = defineEmits<{
+    (e: "update:open", value: boolean): void;
+}>();
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent): void => {
     if (e.key === "Escape" && props.open) {
         emit("update:open", false);
     }
