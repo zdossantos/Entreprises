@@ -1,125 +1,54 @@
-# =============================================================================
-# docker-compose.prod.yml — Coolify v4 compatible
-#
-# POINT D'ENTRÉE HTTP : service "app", port interne 80
-#   → Dans Coolify, configurez le routing vers ce service sur le port 80.
-#
-# Règles Coolify appliquées :
-#   - Réseaux custom supprimés (Coolify crée son propre réseau isolé)
-#   - Ports host supprimés (Traefik gère le routing HTTP/HTTPS)
-#   - Pas de labels Traefik (générés automatiquement par Coolify)
-#   - Variables sensibles externalisées via ${VAR} (voir liste en bas)
-#   - Volumes conservés à l'identique
-#   - Healthchecks conservés/ajoutés sur tous les services
-# =============================================================================
-
 services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: entreprise
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # ---------------------------------------------------------------------------
-  # Application Laravel (PHP + Nginx intégré ou FrankenPHP selon Dockerfile)
-  # POINT D'ENTRÉE HTTP — port interne : 80
-  # ---------------------------------------------------------------------------
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
-    image: entreprises:latest
-    container_name: entreprises_app
     restart: unless-stopped
-    # PORT SUPPRIMÉ : Coolify/Traefik route le trafic HTTP/HTTPS automatiquement
-    environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      APP_KEY: ${APP_KEY}
-      APP_URL: ${APP_URL}
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      CACHE_DRIVER: redis
-      SESSION_DRIVER: redis
-      QUEUE_CONNECTION: redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     volumes:
-      - storage_data:/var/www/html/storage/app
-      - logs_data:/var/www/html/storage/logs
+      - storage:/var/www/html/storage/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/up"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
       start_period: 60s
-
-  # ---------------------------------------------------------------------------
-  # Base de données MySQL
-  # ---------------------------------------------------------------------------
-  mysql:
-    image: mysql:8.0
-    container_name: entreprises_mysql_prod
-    restart: unless-stopped
-    # PORT SUPPRIMÉ : accès interne uniquement (mysql:3306 depuis les autres services)
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 20s
-      retries: 10
-      start_period: 30s
-
-  # ---------------------------------------------------------------------------
-  # Cache Redis
-  # ---------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: entreprises_redis_prod
-    restart: unless-stopped
-    # PORT SUPPRIMÉ : accès interne uniquement (redis:6379 depuis les autres services)
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      APP_NAME: "${APP_NAME:-Entreprise}"
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: "${APP_KEY}"
+      APP_URL: "${APP_URL:-http://localhost}"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: entreprise
+      DB_USERNAME: laravel
+      DB_PASSWORD: "${DB_PASSWORD}"
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: warning
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   mysql_data:
-  redis_data:
-  storage_data:
-  logs_data:
-
-# RÉSEAU SUPPRIMÉ : Coolify crée automatiquement un réseau isolé partagé
-#                   par tous les services de cette stack.
-#                   La communication inter-services reste fonctionnelle
-#                   via le nom du service (ex: mysql:3306, redis:6379).
-
-# =============================================================================
-# VARIABLES D'ENVIRONNEMENT À DÉFINIR DANS COOLIFY
-# (Settings → Environment Variables de votre service)
-# =============================================================================
-#
-#  Variable            Description
-#  ─────────────────── ────────────────────────────────────────────────────────
-#  APP_KEY             Clé d'application Laravel (générer : php artisan key:generate --show)
-#  APP_URL             URL publique de l'application (ex: https://monapp.example.com)
-#  DB_DATABASE         Nom de la base de données MySQL
-#  DB_USERNAME         Utilisateur MySQL de l'application
-#  DB_PASSWORD         Mot de passe MySQL de l'application (sensible)
-#  DB_ROOT_PASSWORD    Mot de passe root MySQL (sensible)
-# =============================================================================
+  storage:
