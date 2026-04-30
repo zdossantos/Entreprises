@@ -1,72 +1,62 @@
-# =========================================================
-# Stage 1: Node – build frontend assets
-# =========================================================
-FROM node:20-alpine AS frontend-build
-
+# ─── Stage 0: PHP dependencies (Composer) ────────────────────────────────────
+FROM composer:2 AS composer-builder
 WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --optimize-autoloader
 
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps
-
+# ─── Stage 1: Build frontend assets ──────────────────────────────────────────
+FROM node:22-alpine AS node-builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
+COPY --from=composer-builder /app/vendor ./vendor
 RUN npm run build
 
-# =========================================================
-# Stage 2: Composer – install PHP dependencies
-# =========================================================
-FROM composer:2 AS composer-build
+# ─── Stage 2: Production image (PHP-FPM + Nginx + Supervisor) ────────────────
+FROM php:8.3-fpm-alpine
 
-WORKDIR /app
-
-COPY composer.json composer.lock ./
-RUN composer install \
-    --no-interaction \
-    --no-dev \
-    --prefer-dist \
-    --optimize-autoloader
-
-# =========================================================
-# Stage 3: Production image
-# =========================================================
-FROM php:8.3-fpm-alpine AS production
-
-# Install system dependencies
 RUN apk add --no-cache \
-    nginx \
-    bash \
-    curl \
-    libpng-dev \
-    libzip-dev \
-    oniguruma-dev \
-    && docker-php-ext-install pdo_mysql mbstring bcmath gd zip opcache \
-    && pecl install redis \
-    && docker-php-ext-enable redis
+        nginx \
+        supervisor \
+        curl \
+        libpng-dev \
+        libzip-dev \
+        zip \
+        unzip \
+        git \
+        sqlite-dev \
+        oniguruma-dev \
+    && docker-php-ext-install \
+        pdo \
+        pdo_sqlite \
+        pdo_mysql \
+        opcache \
+        pcntl \
+        zip \
+        mbstring \
+    && rm -rf /tmp/*
 
-# OPcache configuration for production
-COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
-
-# Nginx configuration
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy application source
+COPY --from=composer-builder /app/vendor ./vendor
+COPY composer.json composer.lock ./
 COPY . .
+COPY --from=node-builder /app/public/build ./public/build
 
-# Copy compiled frontend assets
-COPY --from=frontend-build /app/public/build ./public/build
+RUN mkdir -p /var/www/html/bootstrap/cache /var/www/html/storage/logs \
+    && composer dump-autoload --optimize \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy PHP vendor dependencies
-COPY --from=composer-build /app/vendor ./vendor
-
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Copy entrypoint script
-COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/site.conf /etc/nginx/http.d/default.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-app.ini
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
