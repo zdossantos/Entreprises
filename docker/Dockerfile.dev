@@ -1,0 +1,35 @@
+FROM php:8.2-cli-alpine
+
+# Install system packages, PHP extensions, and Node.js
+RUN apk add --no-cache \
+        curl \
+        libpng-dev \
+        libzip-dev \
+        zip \
+        unzip \
+        git \
+        sqlite-dev \
+        oniguruma-dev \
+        nodejs \
+        npm \
+    && docker-php-ext-install \
+        pdo \
+        pdo_sqlite \
+        pdo_mysql \
+        opcache \
+        pcntl \
+        zip \
+        mbstring \
+    && rm -rf /tmp/*
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY docker/entrypoint.dev.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]

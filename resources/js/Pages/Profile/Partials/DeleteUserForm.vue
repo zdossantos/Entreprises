@@ -1,37 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import DangerButton from "@/Components/DangerButton.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import Modal from "@/Components/Modal.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
-import { useForm, usePage } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { nextTick, ref } from "vue";
 
-const confirmingUserDeletion = ref(false);
-const passwordInput = ref(null);
+const confirmingUserDeletion = ref<boolean>(false);
+const passwordInput = ref<InstanceType<typeof TextInput> | null>(null);
 
 const form = useForm({
     password: "",
 });
 
-const confirmUserDeletion = () => {
+const confirmUserDeletion = (): void => {
     confirmingUserDeletion.value = true;
-    nextTick(() => passwordInput.value.focus());
+    nextTick(() => passwordInput.value?.focus());
 };
 
-const deleteUser = () => {
+const deleteUser = (): void => {
     form.delete(route("profile.destroy"), {
         preserveScroll: true,
         onSuccess: () => closeModal(),
-        onError: () => passwordInput.value.focus(),
+        onError: () => passwordInput.value?.focus(),
         onFinish: () => form.reset(),
     });
 };
 
-const closeModal = () => {
+const closeModal = (): void => {
     confirmingUserDeletion.value = false;
-
     form.reset();
 };
 </script>

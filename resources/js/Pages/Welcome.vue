@@ -1,14 +1,15 @@
-<script setup>
-import { Head, Link } from "@inertiajs/inertia-vue3";
+<script setup lang="ts">
+import { Head, Link } from "@inertiajs/vue3";
 import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
-defineProps({
-    canLogin: Boolean,
-    canRegister: Boolean,
-    laravelVersion: String,
-    phpVersion: String,
-});
+
+defineProps<{
+    canLogin?: boolean;
+    canRegister?: boolean;
+    laravelVersion?: string;
+    phpVersion?: string;
+}>();
 </script>
 
 <template>

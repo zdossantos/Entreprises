@@ -1,16 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import Checkbox from "@/Components/Checkbox.vue";
 import GuestLayout from "@/Layouts/GuestLayout.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
-import { Head, Link, useForm } from "@inertiajs/inertia-vue3";
+import { Head, Link, useForm } from "@inertiajs/vue3";
 
-defineProps({
-    canResetPassword: Boolean,
-    status: String,
-});
+defineProps<{
+    canResetPassword?: boolean;
+    status?: string;
+}>();
 
 const form = useForm({
     email: "",
@@ -18,7 +18,7 @@ const form = useForm({
     remember: false,
 });
 
-const submit = () => {
+const submit = (): void => {
     form.post(route("login"), {
         onFinish: () => form.reset("password"),
     });
